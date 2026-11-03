@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>운전 실력&성향 테스트 - Drive Skill 360</title>
+    <meta name="description" content="운전자 통합 실력 & 성향 진단 테스트. 신호등 반응속도, 장애물 피하기, 주차 챌린지, 기어 변속 테스트 및 성향 설문 기반 맞춤 드림카 추천과 운전 사주 진단." />
+    <meta property="og:title" content="Drive Skill 360 - 운전 실력&성향 테스트" />
+    <meta property="og:description" content="운전자 통합 실력 & 성향 진단 테스트. 신호등 반응속도, 장애물 피하기, 주차 챌린지, 기어 변속 테스트 및 성향 설문 기반 맞춤 드림카 추천과 운전 사주 진단." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        * {
+            font-family: 'Pretendard', sans-serif;
+            user-select: none;
+        }
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between items-center p-3 sm:p-6">
+
+    <!-- Top Header -->
+    <header class="w-full max-w-xl flex justify-between items-center py-4 border-b border-slate-200 mb-4">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm shadow-md shadow-indigo-200">
+                <i class="fa-solid fa-car-side"></i>
+            </div>
+            <h1 class="font-extrabold text-lg text-slate-900 tracking-tight">DRIVE SKILL 360</h1>
+        </div>
+        <div id="game-progress-tag" class="hidden text-xs bg-indigo-50 text-indigo-600 font-bold px-3 py-1.5 rounded-full border border-indigo-200 shadow-sm">
+            진행중
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-xl flex-1 flex flex-col justify-center items-center">
+
+        <!-- SCREEN 1: INTRO / START -->
+        <div id="screen-intro" class="w-full bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 text-center space-y-6">
+            <div class="inline-flex p-4 bg-indigo-50 rounded-2xl text-indigo-600 mb-1 border border-indigo-100">
+                <i class="fa-solid fa-gauge-high text-4xl"></i>
+            </div>
+            <div>
+                <span class="inline-block text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full mb-2">운전자 통합 실력 & 성향 진단</span>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">운전 실력&성향 테스트</h2>
+                <p class="text-slate-500 text-sm mt-2">나의 운전 순발력, 차폭 감각, 변속 센스는 상위 몇 %일까?</p>
+            </div>
+
+            <!-- List of Mini-Games -->
+            <div class="grid grid-cols-2 gap-3 text-left">
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-xl bg-red-100 text-red-600 flex items-center justify-center font-bold text-xs shadow-xs"><i class="fa-solid fa-stopwatch"></i></span>
+                    <div>
+                        <div class="text-xs font-bold text-slate-800">신호등 반응</div>
+                        <div class="text-[10px] text-slate-400">빨강/초록 순발력</div>
+                    </div>
+                </div>
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-xs shadow-xs"><i class="fa-solid fa-car-burst"></i></span>
+                    <div>
+                        <div class="text-xs font-bold text-slate-800">장애물 피하기</div>
+                        <div class="text-[10px] text-slate-400">부드러운 조향 20초</div>
+                    </div>
+                </div>
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs shadow-xs"><i class="fa-solid fa-square-parking"></i></span>
+                    <div>
+                        <div class="text-xs font-bold text-slate-800">주차 챌린지</div>
+                        <div class="text-[10px] text-slate-400">랜덤 맵 차폭 감각</div>
+                    </div>
+                </div>
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs shadow-xs"><i class="fa-solid fa-gear"></i></span>
+                    <div>
+                        <div class="text-xs font-bold text-slate-800">기어 변속</div>
+                        <div class="text-[10px] text-slate-400">타이밍 3라운드</div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btn-start-test" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-extrabold rounded-2xl shadow-lg shadow-indigo-500/25 transition-all text-lg flex items-center justify-center gap-2">
+                <span>테스트 시작하기</span>
+                <i class="fa-solid fa-arrow-right text-sm"></i>
+            </button>
+        </div>
+
+        <!-- SCREEN 2: GAMEPLAY CONTAINER -->
+        <div id="screen-game" class="hidden w-full flex flex-col items-center">
+            
+            <!-- Game Title Banner -->
+            <div class="w-full bg-white border border-slate-200 rounded-t-3xl p-4 flex justify-between items-center shadow-xs">
+                <span id="game-title" class="font-extrabold text-indigo-600 text-sm">미니게임</span>
+                <span id="game-step-indicator" class="text-xs font-bold bg-slate-100 px-3 py-1 rounded-full text-slate-600 border border-slate-200">1 / 4</span>
+            </div>
+
+            <!-- Canvas Display Area -->
+            <div class="relative w-full bg-slate-900 border-x border-slate-200 flex justify-center items-center overflow-hidden" style="height: 420px;">
+                <canvas id="gameCanvas" width="480" height="420" class="w-full h-full object-contain"></canvas>
+                
+                <!-- Ready Overlay Screen -->
+                <div id="ready-overlay" class="absolute inset-0 bg-white/95 backdrop-blur-md flex flex-col justify-between p-6 z-20">
+                    <div class="space-y-4">
+                        <div id="ready-badge" class="inline-block text-xs font-bold px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100">
+                            READY MISSION
+                        </div>
+                        <h3 id="ready-title" class="text-xl font-extrabold text-slate-900">미션 준비</h3>
+                        <div id="ready-rules" class="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl text-xs text-slate-600 space-y-2 leading-relaxed">
+                            <!-- Rules description populated by JS -->
+                        </div>
+                        <div id="ready-controls" class="p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-xs text-indigo-700 font-medium flex items-center gap-2">
+                            <i class="fa-solid fa-keyboard text-indigo-500"></i>
+                            <span id="ready-controls-text">조작법: 스페이스바</span>
+                        </div>
+                    </div>
+                    <button id="btn-start-mission" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-extrabold rounded-2xl shadow-lg shadow-indigo-500/20 transition-all text-base flex justify-center items-center gap-2">
+                        <span>미션 시작하기</span>
+                        <i class="fa-solid fa-play text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bottom Touch Controls Bar -->
+            <div id="touch-controls-bar" class="w-full bg-white border border-slate-200 rounded-b-3xl p-4 shadow-sm">
+                <div id="touch-controls" class="w-full flex justify-center gap-3">
+                    <!-- Dynamic control buttons rendered per mini game -->
+                </div>
+                <div id="game-controls-hint" class="text-center text-xs text-slate-400 mt-2 font-medium">
+                    조작 안내가 표시됩니다.
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2.5: DRIVER PERSONALITY SURVEY (Mycle Style 5 Questions) -->
+        <div id="screen-survey" class="hidden w-full bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 space-y-6">
+            <div class="text-center space-y-2">
+                <span class="inline-block text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">운전자 성향 설문 (마이클 스타일)</span>
+                <h3 class="text-xl font-black text-slate-900">나의 실제 운전 스타일은?</h3>
+                <p class="text-xs text-slate-400">마지막 단계입니다. 평소 성향에 가장 가까운 보기를 선택해 주세요. (총 5문항)</p>
+            </div>
+
+            <div id="survey-questions-container" class="space-y-4">
+                <!-- Populated dynamically -->
+            </div>
+
+            <button id="btn-submit-survey" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-2xl shadow-lg shadow-indigo-500/25 transition-all text-base flex justify-center items-center gap-2">
+                <span>종합 분석 리포트 확인하기</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- SCREEN 3: RESULT & ANALYSIS REPORT -->
+        <div id="screen-result" class="hidden w-full space-y-6 pb-8">
+            
+            <!-- Result Overview Card with Sleek Glass / Gradient Touch -->
+            <div class="relative overflow-hidden bg-gradient-to-b from-indigo-900 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-purple-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div class="relative z-10 flex justify-between items-center">
+                    <span class="text-xs tracking-widest uppercase font-extrabold text-indigo-300 bg-white/10 px-3 py-1 rounded-full border border-white/10">Driver Diagnostic Report</span>
+                    <div class="text-xs text-slate-300 font-medium">분석 완료 ✨</div>
+                </div>
+                
+                <div class="relative z-10 flex flex-col sm:flex-row items-center gap-6 justify-center text-center sm:text-left">
+                    <!-- Score Circle -->
+                    <div class="relative w-32 h-32 flex flex-col justify-center items-center bg-white/10 rounded-full border-4 border-white/20 shadow-inner backdrop-blur-md">
+                        <span id="result-total-score" class="text-4xl sm:text-5xl font-black text-white">0</span>
+                        <span class="text-[11px] text-indigo-200 font-semibold mt-0.5">/ 100 점</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div id="result-percentile-badge" class="inline-block bg-indigo-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-full shadow-lg shadow-indigo-500/30">
+                            상위 <span id="result-percentile">0%</span> 드라이버
+                        </div>
+                        <h3 id="result-archetype-title" class="text-2xl font-black text-white tracking-tight">운전자 성향 타이틀</h3>
+                    </div>
+                </div>
+
+                <div class="relative z-10 bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-sm text-center">
+                    <p id="result-archetype-desc" class="text-xs sm:text-sm text-indigo-100 font-medium leading-relaxed italic">"상세 심리 성향 서술이 이곳에 표시됩니다."</p>
+                </div>
+            </div>
+
+            <!-- Driver Matching: Recommended Car & Music Card -->
+            <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-indigo-100 rounded-3xl p-6 space-y-4 shadow-lg">
+                <div class="flex items-center gap-2 text-indigo-700 font-bold border-b border-indigo-100 pb-3">
+                    <i class="fa-solid fa-compact-disc text-lg"></i>
+                    <span>맞춤 드라이빙 추천 & 음악 성향</span>
+                </div>
+                
+                <!-- Recommended Car Image Display -->
+                <div class="w-full h-40 rounded-2xl overflow-hidden shadow-inner border border-indigo-100 bg-slate-900 relative">
+                    <img id="result-car-img" src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80" alt="추천 차량 사진" class="w-full h-full object-cover opacity-90 hover:scale-105 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent flex items-end p-3">
+                        <span id="result-recommended-car" class="text-white font-black text-sm drop-shadow">분석 중...</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+                    <div class="bg-white/80 p-4 rounded-2xl border border-indigo-100/60 shadow-sm space-y-1.5">
+                        <div class="text-indigo-600 font-extrabold flex items-center gap-1.5">
+                            <i class="fa-solid fa-car"></i> 추천 드림 카 이유
+                        </div>
+                        <p id="result-car-reason" class="text-[11px] text-slate-600 leading-relaxed">운전 성향과 스킬 점수를 고려한 맞춤 차량</p>
+                    </div>
+                    <div class="bg-white/80 p-4 rounded-2xl border border-indigo-100/60 shadow-sm space-y-1.5">
+                        <div class="text-indigo-600 font-extrabold flex items-center gap-1.5">
+                            <i class="fa-solid fa-music"></i> 추천 드라이빙 플레이리스트
+                        </div>
+                        <div id="result-recommended-music" class="font-bold text-slate-800 text-base">분석 중...</div>
+                        <p id="result-music-reason" class="text-[11px] text-slate-600 leading-relaxed">드라이브 몰입감을 높여주는 음악 장르</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Profile & Driver Fortune Section -->
+            <div id="user-profile-section" class="bg-white border border-slate-100 p-6 rounded-3xl space-y-4 shadow-xl shadow-slate-200/50">
+                <div class="flex items-center gap-2 text-indigo-600 font-bold border-b border-slate-100 pb-3">
+                    <i class="fa-solid fa-id-card text-lg"></i>
+                    <span>운전자 프로필 & 사주형 운명 진단</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">성명</label>
+                        <input type="text" id="prof-name" placeholder="홍길동" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">생년월일</label>
+                        <input type="date" id="prof-birth" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-indigo-500 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">면허 취득일</label>
+                        <div class="flex gap-2">
+                            <input type="date" id="prof-license-date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-indigo-500 font-medium">
+                            <button id="btn-unlicensed" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold whitespace-nowrap transition-colors border border-slate-200">무면허</button>
+                        </div>
+                    </div>
+                </div>
+                <button id="btn-analyze-fortune" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-2xl shadow-lg shadow-indigo-500/20 transition-all text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> 개인 사주형 운전 성향 진단받기
+                </button>
+                <div id="fortune-result-box" class="hidden p-4 bg-indigo-50/80 border border-indigo-100 rounded-2xl text-indigo-900 text-xs sm:text-sm leading-relaxed font-medium transition-all">
+                    <!-- Dynamic Fortune Sentence -->
+                </div>
+            </div>
+
+            <!-- Distribution Bell Curve Chart Card -->
+            <div class="bg-white border border-slate-100 rounded-3xl p-6 space-y-3 shadow-xl shadow-slate-200/50">
+                <div class="flex justify-between items-center text-xs text-slate-400">
+                    <span class="font-bold text-slate-800">전국 운전자 점수 분포도</span>
+                    <span id="chart-position-label" class="text-indigo-600 font-bold bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">내 위치: 분석중...</span>
+                </div>
+                <div class="w-full h-44 relative">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 4 Categories Breakdown -->
+            <div class="bg-white border border-slate-100 rounded-3xl p-6 space-y-4 shadow-xl shadow-slate-200/50">
+                <h4 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3">분야별 세부 진단 (각 25점 만점)</h4>
+                <div id="categories-analysis-list" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 pt-2">
+                <button id="btn-restart" class="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold rounded-2xl text-sm transition-colors border border-slate-200 shadow-sm">
+                    <i class="fa-solid fa-rotate-right mr-1.5"></i> 다시하기
+                </button>
+                <button id="btn-share" class="flex-1 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-2xl text-sm transition-colors shadow-lg shadow-indigo-500/25">
+                    <i class="fa-solid fa-share-nodes mr-1.5"></i> 결과 공유하기
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast Message Container -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-xl opacity-0 transition-opacity pointer-events-none z-50">
+        메시지 내용
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

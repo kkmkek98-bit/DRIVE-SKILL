@@ -1,0 +1,6 @@
+{
+  "name": "Drive Skill 360",
+  "description": "운전자 통합 실력 & 성향 진단 테스트. 신호등 반응속도, 장애물 피하기, 주차 챌린지, 기어 변속 테스트 및 성향 설문 기반 맞춤 드림카 추천과 운전 사주 진단.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

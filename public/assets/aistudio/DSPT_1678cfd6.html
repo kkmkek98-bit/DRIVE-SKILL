@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>운전 실력&성향 테스트</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        * {
+            font-family: 'Pretendard', sans-serif;
+            user-select: none;
+        }
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between items-center p-3 sm:p-6">
+
+    <!-- Top Header -->
+    <header class="w-full max-w-xl flex justify-between items-center py-4 border-b border-slate-200 mb-4">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm shadow-md shadow-indigo-200">
+                <i class="fa-solid fa-car-side"></i>
+            </div>
+            <h1 class="font-extrabold text-lg text-slate-900 tracking-tight">DRIVE SKILL 360</h1>
+        </div>
+        <div id="game-progress-tag" class="hidden text-xs bg-indigo-50 text-indigo-600 font-bold px-3 py-1.5 rounded-full border border-indigo-200 shadow-sm">
+            진행중
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-xl flex-1 flex flex-col justify-center items-center">
+
+        <!-- SCREEN 1: INTRO / START -->
+        <div id="screen-intro" class="w-full bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 text-center space-y-6">
+            <div class="inline-flex p-4 bg-indigo-50 rounded-2xl text-indigo-600 mb-1 border border-indigo-100">
+                <i class="fa-solid fa-gauge-high text-4xl"></i>
+            </div>
+            <div>
+                <span class="inline-block text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full mb-2">운전자 통합 실력 & 성향 진단</span>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">운전 실력&성향 테스트</h2>
+                <p class="text-slate-500 text-sm mt-2">나의 운전 순발력, 차폭 감각, 변속 센스는 상위 몇 %일까?</p>
+            </div>
+
+            <!-- List of Mini-Games -->
+            <div class="grid grid-cols-2 gap-3 text-left">
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-xl bg-red-100 text-red-600 flex items-center justify-center font-bold text-xs shadow-xs"><i class="fa-solid fa-stopwatch"></i></span>
+                    <div>
+                        <div class="text-xs font-bold text-slate-800">신호등 반응</div>
+                        <div class="text-[10px] text-slate-400">빨강/초록 순발력</div>
+                    </div>
+                </div>
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-xs shadow-xs"><i class="fa-solid fa-car-burst"></i></span>
+                    <div>
+                        <div class="text-xs font-bold text-slate-800">장애물 피하기</div>
+                        <div class="text-[10px] text-slate-400">부드러운 조향 20초</div>
+                    </div>
+                </div>
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs shadow-xs"><i class="fa-solid fa-square-parking"></i></span>
+                    <div>
+                        <div class="text-xs font-bold text-slate-800">주차 챌린지</div>
+                        <div class="text-[10px] text-slate-400">랜덤 맵 차폭 감각</div>
+                    </div>
+                </div>
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs shadow-xs"><i class="fa-solid fa-gear"></i></span>
+                    <div>
+                        <div class="text-xs font-bold text-slate-800">기어 변속</div>
+                        <div class="text-[10px] text-slate-400">타이밍 3라운드</div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btn-start-test" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-extrabold rounded-2xl shadow-lg shadow-indigo-500/25 transition-all text-lg flex items-center justify-center gap-2">
+                <span>테스트 시작하기</span>
+                <i class="fa-solid fa-arrow-right text-sm"></i>
+            </button>
+        </div>
+
+        <!-- SCREEN 2: GAMEPLAY CONTAINER -->
+        <div id="screen-game" class="hidden w-full flex flex-col items-center">
+            
+            <!-- Game Title Banner -->
+            <div class="w-full bg-white border border-slate-200 rounded-t-3xl p-4 flex justify-between items-center shadow-xs">
+                <span id="game-title" class="font-extrabold text-indigo-600 text-sm">미니게임</span>
+                <span id="game-step-indicator" class="text-xs font-bold bg-slate-100 px-3 py-1 rounded-full text-slate-600 border border-slate-200">1 / 4</span>
+            </div>
+
+            <!-- Canvas Display Area -->
+            <div class="relative w-full bg-slate-900 border-x border-slate-200 flex justify-center items-center overflow-hidden" style="height: 420px;">
+                <canvas id="gameCanvas" width="480" height="420" class="w-full h-full object-contain"></canvas>
+                
+                <!-- Ready Overlay Screen -->
+                <div id="ready-overlay" class="absolute inset-0 bg-white/95 backdrop-blur-md flex flex-col justify-between p-6 z-20">
+                    <div class="space-y-4">
+                        <div id="ready-badge" class="inline-block text-xs font-bold px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100">
+                            READY MISSION
+                        </div>
+                        <h3 id="ready-title" class="text-xl font-extrabold text-slate-900">미션 준비</h3>
+                        <div id="ready-rules" class="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl text-xs text-slate-600 space-y-2 leading-relaxed">
+                            <!-- Rules description populated by JS -->
+                        </div>
+                        <div id="ready-controls" class="p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-xs text-indigo-700 font-medium flex items-center gap-2">
+                            <i class="fa-solid fa-keyboard text-indigo-500"></i>
+                            <span id="ready-controls-text">조작법: 스페이스바</span>
+                        </div>
+                    </div>
+                    <button id="btn-start-mission" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-extrabold rounded-2xl shadow-lg shadow-indigo-500/20 transition-all text-base flex justify-center items-center gap-2">
+                        <span>미션 시작하기</span>
+                        <i class="fa-solid fa-play text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bottom Touch Controls Bar -->
+            <div id="touch-controls-bar" class="w-full bg-white border border-slate-200 rounded-b-3xl p-4 shadow-sm">
+                <div id="touch-controls" class="w-full flex justify-center gap-3">
+                    <!-- Dynamic control buttons rendered per mini game -->
+                </div>
+                <div id="game-controls-hint" class="text-center text-xs text-slate-400 mt-2 font-medium">
+                    조작 안내가 표시됩니다.
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2.5: DRIVER PERSONALITY SURVEY (Mycle Style 5 Questions) -->
+        <div id="screen-survey" class="hidden w-full bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 space-y-6">
+            <div class="text-center space-y-2">
+                <span class="inline-block text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">운전자 성향 설문 (마이클 스타일)</span>
+                <h3 class="text-xl font-black text-slate-900">나의 실제 운전 스타일은?</h3>
+                <p class="text-xs text-slate-400">마지막 단계입니다. 평소 성향에 가장 가까운 보기를 선택해 주세요. (총 5문항)</p>
+            </div>
+
+            <div id="survey-questions-container" class="space-y-4">
+                <!-- Populated dynamically -->
+            </div>
+
+            <button id="btn-submit-survey" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-2xl shadow-lg shadow-indigo-500/25 transition-all text-base flex justify-center items-center gap-2">
+                <span>종합 분석 리포트 확인하기</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- SCREEN 3: RESULT & ANALYSIS REPORT -->
+        <div id="screen-result" class="hidden w-full space-y-6 pb-8">
+            
+            <!-- Result Overview Card with Sleek Glass / Gradient Touch -->
+            <div class="relative overflow-hidden bg-gradient-to-b from-indigo-900 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-purple-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div class="relative z-10 flex justify-between items-center">
+                    <span class="text-xs tracking-widest uppercase font-extrabold text-indigo-300 bg-white/10 px-3 py-1 rounded-full border border-white/10">Driver Diagnostic Report</span>
+                    <div class="text-xs text-slate-300 font-medium">분석 완료 ✨</div>
+                </div>
+                
+                <div class="relative z-10 flex flex-col sm:flex-row items-center gap-6 justify-center text-center sm:text-left">
+                    <!-- Score Circle -->
+                    <div class="relative w-32 h-32 flex flex-col justify-center items-center bg-white/10 rounded-full border-4 border-white/20 shadow-inner backdrop-blur-md">
+                        <span id="result-total-score" class="text-4xl sm:text-5xl font-black text-white">0</span>
+                        <span class="text-[11px] text-indigo-200 font-semibold mt-0.5">/ 100 점</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div id="result-percentile-badge" class="inline-block bg-indigo-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-full shadow-lg shadow-indigo-500/30">
+                            상위 <span id="result-percentile">0%</span> 드라이버
+                        </div>
+                        <h3 id="result-archetype-title" class="text-2xl font-black text-white tracking-tight">운전자 성향 타이틀</h3>
+                    </div>
+                </div>
+
+                <div class="relative z-10 bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-sm text-center">
+                    <p id="result-archetype-desc" class="text-xs sm:text-sm text-indigo-100 font-medium leading-relaxed italic">"상세 심리 성향 서술이 이곳에 표시됩니다."</p>
+                </div>
+            </div>
+
+            <!-- Driver Matching: Recommended Car & Music Card -->
+            <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-indigo-100 rounded-3xl p-6 space-y-4 shadow-lg">
+                <div class="flex items-center gap-2 text-indigo-700 font-bold border-b border-indigo-100 pb-3">
+                    <i class="fa-solid fa-compact-disc text-lg"></i>
+                    <span>맞춤 드라이빙 추천 & 음악 성향</span>
+                </div>
+                
+                <!-- Recommended Car Image Display -->
+                <div class="w-full h-40 rounded-2xl overflow-hidden shadow-inner border border-indigo-100 bg-slate-900 relative">
+                    <img id="result-car-img" src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80" alt="추천 차량 사진" class="w-full h-full object-cover opacity-90 hover:scale-105 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent flex items-end p-3">
+                        <span id="result-recommended-car" class="text-white font-black text-sm drop-shadow">분석 중...</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+                    <div class="bg-white/80 p-4 rounded-2xl border border-indigo-100/60 shadow-sm space-y-1.5">
+                        <div class="text-indigo-600 font-extrabold flex items-center gap-1.5">
+                            <i class="fa-solid fa-car"></i> 추천 드림 카 이유
+                        </div>
+                        <p id="result-car-reason" class="text-[11px] text-slate-600 leading-relaxed">운전 성향과 스킬 점수를 고려한 맞춤 차량</p>
+                    </div>
+                    <div class="bg-white/80 p-4 rounded-2xl border border-indigo-100/60 shadow-sm space-y-1.5">
+                        <div class="text-indigo-600 font-extrabold flex items-center gap-1.5">
+                            <i class="fa-solid fa-music"></i> 추천 드라이빙 플레이리스트
+                        </div>
+                        <div id="result-recommended-music" class="font-bold text-slate-800 text-base">분석 중...</div>
+                        <p id="result-music-reason" class="text-[11px] text-slate-600 leading-relaxed">드라이브 몰입감을 높여주는 음악 장르</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Profile & Driver Fortune Section -->
+            <div id="user-profile-section" class="bg-white border border-slate-100 p-6 rounded-3xl space-y-4 shadow-xl shadow-slate-200/50">
+                <div class="flex items-center gap-2 text-indigo-600 font-bold border-b border-slate-100 pb-3">
+                    <i class="fa-solid fa-id-card text-lg"></i>
+                    <span>운전자 프로필 & 사주형 운명 진단</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">성명</label>
+                        <input type="text" id="prof-name" placeholder="홍길동" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">생년월일</label>
+                        <input type="date" id="prof-birth" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-indigo-500 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">면허 취득일</label>
+                        <div class="flex gap-2">
+                            <input type="date" id="prof-license-date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-indigo-500 font-medium">
+                            <button id="btn-unlicensed" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold whitespace-nowrap transition-colors border border-slate-200">무면허</button>
+                        </div>
+                    </div>
+                </div>
+                <button id="btn-analyze-fortune" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-2xl shadow-lg shadow-indigo-500/20 transition-all text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> 개인 사주형 운전 성향 진단받기
+                </button>
+                <div id="fortune-result-box" class="hidden p-4 bg-indigo-50/80 border border-indigo-100 rounded-2xl text-indigo-900 text-xs sm:text-sm leading-relaxed font-medium transition-all">
+                    <!-- Dynamic Fortune Sentence -->
+                </div>
+            </div>
+
+            <!-- Distribution Bell Curve Chart Card -->
+            <div class="bg-white border border-slate-100 rounded-3xl p-6 space-y-3 shadow-xl shadow-slate-200/50">
+                <div class="flex justify-between items-center text-xs text-slate-400">
+                    <span class="font-bold text-slate-800">전국 운전자 점수 분포도</span>
+                    <span id="chart-position-label" class="text-indigo-600 font-bold bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">내 위치: 분석중...</span>
+                </div>
+                <div class="w-full h-44 relative">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 4 Categories Breakdown -->
+            <div class="bg-white border border-slate-100 rounded-3xl p-6 space-y-4 shadow-xl shadow-slate-200/50">
+                <h4 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3">분야별 세부 진단 (각 25점 만점)</h4>
+                <div id="categories-analysis-list" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 pt-2">
+                <button id="btn-restart" class="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold rounded-2xl text-sm transition-colors border border-slate-200 shadow-sm">
+                    <i class="fa-solid fa-rotate-right mr-1.5"></i> 다시하기
+                </button>
+                <button id="btn-share" class="flex-1 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-2xl text-sm transition-colors shadow-lg shadow-indigo-500/25">
+                    <i class="fa-solid fa-share-nodes mr-1.5"></i> 결과 공유하기
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast Message Container -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-xl opacity-0 transition-opacity pointer-events-none z-50">
+        메시지 내용
+    </div>
+
+    <script>
+        // Global Game States
+        const gameSequence = ["reaction", "avoidance", "parking", "gear"];
+        let currentStepIndex = 0;
+
+        const gameScores = {
+            reaction: 0,
+            avoidance: 0,
+            parking: 0,
+            gear: 0
+        };
+
+        const gameDetails = {
+            reactionMs: [],
+            avoidedCount: 0,
+            parkingTimeLeft: 0,
+            gearSuccesses: 0
+        };
+
+        // Mycle-style Driver Survey Answers (5 Questions)
+        let surveyAnswers = { q1: null, q2: null, q3: null, q4: null, q5: null };
+
+        let canvas, ctx;
+        let animFrameId = null;
+        let chartInstance = null;
+
+        window.onload = () => {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+
+            document.getElementById('btn-start-test').onclick = startOverallTest;
+            document.getElementById('btn-restart').onclick = startOverallTest;
+            
+            let isUnlicensed = false;
+            document.getElementById('btn-unlicensed').onclick = () => {
+                const licInput = document.getElementById('prof-license-date');
+                const btnUnlic = document.getElementById('btn-unlicensed');
+                isUnlicensed = !isUnlicensed;
+                if (isUnlicensed) {
+                    licInput.value = "";
+                    licInput.disabled = true;
+                    licInput.classList.add('bg-slate-100', 'text-slate-400');
+                    btnUnlic.innerText = "취소";
+                    btnUnlic.classList.add('bg-indigo-50', 'text-indigo-600', 'border-indigo-200');
+                    showToast("무면허로 설정되었습니다.");
+                } else {
+                    licInput.disabled = false;
+                    licInput.classList.remove('bg-slate-100', 'text-slate-400');
+                    btnUnlic.innerText = "무면허";
+                    btnUnlic.classList.remove('bg-indigo-50', 'text-indigo-600', 'border-indigo-200');
+                    showToast("면허 취득일 선택이 활성화되었습니다.");
+                }
+            };
+
+            document.getElementById('btn-analyze-fortune').onclick = generateFortuneAnalysis;
+            document.getElementById('btn-share').onclick = shareResult;
+        };
+
+        function showScreen(screenId) {
+            document.getElementById('screen-intro').classList.add('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-survey').classList.add('hidden');
+            document.getElementById('screen-result').classList.add('hidden');
+
+            document.getElementById(`screen-${screenId}`).classList.remove('hidden');
+
+            const progressTag = document.getElementById('game-progress-tag');
+            if (screenId === 'game') {
+                progressTag.classList.remove('hidden');
+            } else {
+                progressTag.classList.add('hidden');
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0');
+            setTimeout(() => toast.classList.add('opacity-0'), 2500);
+        }
+
+        function startOverallTest() {
+            currentStepIndex = 0;
+            gameScores.reaction = 0;
+            gameScores.avoidance = 0;
+            gameScores.parking = 0;
+            gameScores.gear = 0;
+            surveyAnswers = { q1: null, q2: null, q3: null, q4: null, q5: null };
+
+            showScreen('game');
+            runCurrentMiniGame();
+        }
+
+        function runCurrentMiniGame() {
+            if (animFrameId) {
+                cancelAnimationFrame(animFrameId);
+                animFrameId = null;
+            }
+
+            document.getElementById('game-step-indicator').innerText = `${currentStepIndex + 1} / ${gameSequence.length}`;
+
+            const gameType = gameSequence[currentStepIndex];
+            if (gameType === "reaction") {
+                initReactionGame();
+            } else if (gameType === "avoidance") {
+                initAvoidanceGame();
+            } else if (gameType === "parking") {
+                initParkingGame();
+            } else if (gameType === "gear") {
+                initGearGame();
+            }
+        }
+
+        function finishMiniGame() {
+            currentStepIndex++;
+            if (currentStepIndex < gameSequence.length) {
+                runCurrentMiniGame();
+            } else {
+                showDriverSurveyScreen();
+            }
+        }
+
+        function showReadyScreen(title, rulesArray, controlsText, onStartCallback) {
+            const readyOverlay = document.getElementById('ready-overlay');
+            const readyTitle = document.getElementById('ready-title');
+            const readyRules = document.getElementById('ready-rules');
+            const readyControlsText = document.getElementById('ready-controls-text');
+            const btnStart = document.getElementById('btn-start-mission');
+
+            readyTitle.innerText = title;
+            readyRules.innerHTML = rulesArray.map(r => `<p>${r}</p>`).join('');
+            readyControlsText.innerText = `조작법: ${controlsText}`;
+
+            readyOverlay.classList.remove('hidden');
+
+            function startHandler() {
+                readyOverlay.classList.add('hidden');
+                btnStart.removeEventListener('click', startHandler);
+                window.removeEventListener('keydown', keyStartHandler);
+                onStartCallback();
+            }
+
+            function keyStartHandler(e) {
+                if (e.code === 'Space' || e.code === 'Enter') {
+                    e.preventDefault();
+                    startHandler();
+                }
+            }
+
+            btnStart.addEventListener('click', startHandler);
+            window.addEventListener('keydown', keyStartHandler);
+        }
+
+        // =================================================================
+        // MINI GAME 1: 신호등 반응속도 (Red & Green Lights Only)
+        // =================================================================
+        function initReactionGame() {
+            document.getElementById('game-title').innerText = "1. 신호등 반응속도";
+            document.getElementById('game-controls-hint').innerText = "안내: 화면의 [시작하기] 버튼 클릭 후 게임이 시작됩니다.";
+
+            showReadyScreen(
+                "🚥 1단계: 신호등 반응속도",
+                [
+                    "• 목표: 빨간불에서 초록불로 바뀔 때 타이밍에 맞춰 스페이스바 누르기!",
+                    "• 규칙: 총 3번 측정하여 1/3, 2/3, 3/3 회차별 평균 반응 속도를 계산합니다.",
+                    "• 주의: 빨간불일 때 미리 누르면 부정출발 처리됩니다."
+                ],
+                "스페이스바 또는 화면 반응 버튼",
+                startActualGame
+            );
+
+            function startActualGame() {
+                document.getElementById('game-controls-hint').innerText = "컴퓨터: [스페이스바] / 모바일: 화면의 반응 버튼 클릭";
+                const touchControls = document.getElementById('touch-controls');
+                touchControls.innerHTML = `
+                    <button id="btn-reaction-tap" class="w-full py-4 bg-indigo-600 active:bg-indigo-700 text-white font-extrabold rounded-2xl shadow-md text-lg">
+                        <i class="fa-solid fa-hand-pointer mr-2"></i> 반응 클릭 (스페이스바)
+                    </button>
+                `;
+
+                let trials = 0;
+                const maxTrials = 3;
+                let reactionTimes = [];
+                let state = "WAITING"; // "RED", "GREEN"
+                let startTime = 0;
+                let timerId = null;
+
+                function drawTrafficLight(activeLight, message) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = "#0f172a";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2 - 20;
+
+                    // Traffic light housing (Red and Green lights)
+                    ctx.fillStyle = "#1e293b";
+                    ctx.beginPath();
+                    ctx.roundRect(centerX - 45, centerY - 80, 90, 160, 20);
+                    ctx.fill();
+                    ctx.strokeStyle = "#334155";
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+
+                    // Red Light (Top)
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY - 40, 28, 0, Math.PI * 2);
+                    ctx.fillStyle = activeLight === "RED" ? "#ef4444" : "#475569";
+                    ctx.fill();
+                    if (activeLight === "RED") {
+                        ctx.shadowColor = "#ef4444";
+                        ctx.shadowBlur = 20;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+
+                    // Green Light (Bottom)
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY + 40, 28, 0, Math.PI * 2);
+                    ctx.fillStyle = activeLight === "GREEN" ? "#22c55e" : "#475569";
+                    ctx.fill();
+                    if (activeLight === "GREEN") {
+                        ctx.shadowColor = "#22c55e";
+                        ctx.shadowBlur = 20;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+
+                    // Precise Measurement Progress Indicator (1/3, 2/3, 3/3)
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 18px Pretendard";
+                    ctx.textAlign = "center";
+                    let stepText = trials === 0 ? "1/3" : trials === 1 ? "2/3" : "3/3";
+                    ctx.fillText(`측정: ${trials + 1} / ${maxTrials} (${stepText})`, centerX, 45);
+
+                    ctx.font = "bold 20px Pretendard";
+                    ctx.fillStyle = activeLight === "GREEN" ? "#4ade80" : "#f87171";
+                    ctx.fillText(message, centerX, centerY + 120);
+                }
+
+                function startTrial() {
+                    state = "RED";
+                    drawTrafficLight("RED", "빨간불: 정지 대기 중...");
+
+                    const greenDelay = 1200 + Math.random() * 1800;
+                    timerId = setTimeout(() => {
+                        state = "GREEN";
+                        startTime = performance.now();
+                        drawTrafficLight("GREEN", "초록불! 지금 누르세요!");
+                    }, greenDelay);
+                }
+
+                function handleInput() {
+                    if (state === "RED") {
+                        clearTimeout(timerId);
+                        drawTrafficLight("RED", "⚠️ 부정출발! 초록불이 켜질 때 누르세요.");
+                        state = "WAITING";
+                        setTimeout(startTrial, 1500);
+                    } else if (state === "GREEN") {
+                        const elapsed = Math.round(performance.now() - startTime);
+                        reactionTimes.push(elapsed);
+                        trials++;
+                        state = "WAITING";
+
+                        drawTrafficLight("GREEN", `⚡ 반응 속도: ${elapsed}ms`);
+
+                        setTimeout(() => {
+                            if (trials < maxTrials) {
+                                startTrial();
+                            } else {
+                                finishGame();
+                            }
+                        }, 1200);
+                    }
+                }
+
+                function finishGame() {
+                    gameDetails.reactionMs = reactionTimes;
+                    const avgMs = reactionTimes.length ? reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length : 350;
+                    
+                    let score = 0;
+                    if (avgMs <= 170) score = 25;
+                    else if (avgMs <= 210) score = 22;
+                    else if (avgMs <= 250) score = 18;
+                    else if (avgMs <= 300) score = 14;
+                    else score = 8;
+
+                    gameScores.reaction = score;
+
+                    cleanup();
+                    finishMiniGame();
+                }
+
+                function onKeyDown(e) {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        handleInput();
+                    }
+                }
+
+                const btnTap = document.getElementById('btn-reaction-tap');
+                function onClick(e) {
+                    e.preventDefault();
+                    handleInput();
+                }
+
+                window.addEventListener('keydown', onKeyDown);
+                btnTap.addEventListener('click', onClick);
+
+                function cleanup() {
+                    window.removeEventListener('keydown', onKeyDown);
+                    btnTap.removeEventListener('click', onClick);
+                    if (timerId) clearTimeout(timerId);
+                }
+
+                startTrial();
+            }
+        }
+
+        // =================================================================
+        // MINI GAME 2: 장애물 피하기 (Avoidance Game)
+        // =================================================================
+        function initAvoidanceGame() {
+            document.getElementById('game-title').innerText = "2. 장애물 피하기";
+            document.getElementById('game-controls-hint').innerText = "안내: 화면의 [시작하기] 버튼 클릭 후 게임이 시작됩니다.";
+
+            showReadyScreen(
+                "🚗 2단계: 장애물 피하기",
+                [
+                    "• 목표: 5차선 도로에서 20초 동안 내려오는 차 피하기!",
+                    "• 조종하는 차량 앞에 헤드라이트(전조등) 표시 추가",
+                    "• 규칙: 부딪히면 즉시 종료. 시간이 지날수록 차량 속도와 수가 증가합니다."
+                ],
+                "좌/우 방향키 또는 화면 화살표 버튼",
+                startActualGame
+            );
+
+            function startActualGame() {
+                document.getElementById('game-controls-hint').innerText = "컴퓨터: [좌/우 방향키] / 모바일: 하단 화살표 버튼";
+                const touchControls = document.getElementById('touch-controls');
+                touchControls.innerHTML = `
+                    <button id="btn-left" class="flex-1 py-3.5 bg-slate-100 active:bg-slate-200 text-slate-700 font-extrabold rounded-2xl shadow-xs text-xl border border-slate-200">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <button id="btn-right" class="flex-1 py-3.5 bg-slate-100 active:bg-slate-200 text-slate-700 font-extrabold rounded-2xl shadow-xs text-xl border border-slate-200">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                `;
+
+                const totalLanes = 5;
+                const laneWidth = canvas.width / totalLanes;
+                let targetLane = 2;
+                
+                const playerCar = {
+                    w: 36,
+                    h: 60,
+                    x: targetLane * laneWidth + (laneWidth - 36) / 2,
+                    y: canvas.height - 80,
+                    tilt: 0
+                };
+
+                const totalDuration = 20; 
+                let timeLeft = totalDuration;
+                let avoidedCount = 0;
+                let gameOver = false;
+                let gameSuccess = false;
+
+                let obstacles = [];
+                let lastSpawnTime = 0;
+                let laneLastY = [ -500, -500, -500, -500, -500 ];
+
+                let lastFrameTime = performance.now();
+                let timerInterval = setInterval(() => {
+                    if (!gameOver) {
+                        timeLeft--;
+                        if (timeLeft <= 0) {
+                            timeLeft = 0;
+                            gameOver = true;
+                            gameSuccess = true;
+                            finishGame();
+                        }
+                    }
+                }, 1000);
+
+                function gameLoop(now) {
+                    if (gameOver) return;
+
+                    const dt = (now - lastFrameTime) / 1000;
+                    lastFrameTime = now;
+
+                    const targetX = targetLane * laneWidth + (laneWidth - playerCar.w) / 2;
+                    const dx = targetX - playerCar.x;
+                    playerCar.x += dx * 0.15;
+                    playerCar.tilt = dx * 0.008;
+
+                    const progressRatio = (totalDuration - timeLeft) / totalDuration;
+                    const baseSpeed = 290 + progressRatio * 240; 
+                    const spawnInterval = Math.max(220, 600 - progressRatio * 380); 
+
+                    if (now - lastSpawnTime > spawnInterval) {
+                        lastSpawnTime = now;
+
+                        const numCarsToSpawn = Math.random() < (0.35 + progressRatio * 0.4) ? 2 : 1;
+                        let availableLanes = [0, 1, 2, 3, 4].filter(l => (laneLastY[l] > 140 || laneLastY[l] < -100));
+
+                        for (let i = 0; i < numCarsToSpawn; i++) {
+                            if (availableLanes.length === 0) break;
+                            const randIdx = Math.floor(Math.random() * availableLanes.length);
+                            const lane = availableLanes.splice(randIdx, 1)[0];
+
+                            const obsCar = {
+                                lane: lane,
+                                y: -70,
+                                w: 36,
+                                h: 60,
+                                speed: baseSpeed + (Math.random() * 40 - 20),
+                                color: ['#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6'][Math.floor(Math.random() * 4)]
+                            };
+                            obstacles.push(obsCar);
+                            laneLastY[lane] = obsCar.y;
+                        }
+                    }
+
+                    for (let i = obstacles.length - 1; i >= 0; i--) {
+                        const obs = obstacles[i];
+                        obs.y += obs.speed * dt;
+                        laneLastY[obs.lane] = obs.y;
+
+                        const obsX = obs.lane * laneWidth + (laneWidth - obs.w) / 2;
+
+                        if (
+                            playerCar.x < obsX + obs.w &&
+                            playerCar.x + playerCar.w > obsX &&
+                            playerCar.y < obs.y + obs.h &&
+                            playerCar.y + playerCar.h > obs.y
+                        ) {
+                            gameOver = true;
+                            finishGame();
+                            return;
+                        }
+
+                        if (obs.y > canvas.height + 80) {
+                            obstacles.splice(i, 1);
+                            avoidedCount++;
+                        }
+                    }
+
+                    render();
+                    animFrameId = requestAnimationFrame(gameLoop);
+                }
+
+                function render() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.fillStyle = "#1e293b";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.strokeStyle = "#475569";
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([15, 15]);
+                    for (let i = 1; i < totalLanes; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(i * laneWidth, 0);
+                        ctx.lineTo(i * laneWidth, canvas.height);
+                        ctx.stroke();
+                    }
+                    ctx.setLineDash([]);
+
+                    obstacles.forEach(obs => {
+                        const obsX = obs.lane * laneWidth + (laneWidth - obs.w) / 2;
+                        ctx.fillStyle = obs.color;
+                        ctx.beginPath();
+                        ctx.roundRect(obsX, obs.y, obs.w, obs.h, 6);
+                        ctx.fill();
+
+                        ctx.fillStyle = "rgba(0,0,0,0.3)";
+                        ctx.fillRect(obsX + 4, obs.y + 12, obs.w - 8, obs.h - 24);
+                    });
+
+                    // Draw Player Car with Headlights in front
+                    ctx.save();
+                    ctx.translate(playerCar.x + playerCar.w / 2, playerCar.y + playerCar.h / 2);
+                    ctx.rotate(playerCar.tilt);
+
+                    ctx.fillStyle = "#38bdf8";
+                    ctx.beginPath();
+                    ctx.roundRect(-playerCar.w / 2, -playerCar.h / 2, playerCar.w, playerCar.h, 6);
+                    ctx.fill();
+                    ctx.strokeStyle = "#7dd3fc";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.fillStyle = "#0284c7";
+                    ctx.fillRect(-playerCar.w / 2 + 4, -playerCar.h / 2 + 12, playerCar.w - 8, playerCar.h - 24);
+
+                    // Front Headlights
+                    ctx.fillStyle = "#fef08a";
+                    ctx.fillRect(-playerCar.w / 2 + 3, -playerCar.h / 2 - 2, 6, 4);
+                    ctx.fillRect(playerCar.w / 2 - 9, -playerCar.h / 2 - 2, 6, 4);
+
+                    ctx.restore();
+
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 16px Pretendard";
+                    ctx.textAlign = "left";
+                    ctx.fillText(`⏱️ 남은시간: ${timeLeft}초`, 15, 30);
+                    ctx.textAlign = "right";
+                    ctx.fillText(`🚗 회피: ${avoidedCount}대`, canvas.width - 15, 30);
+                }
+
+                function finishGame() {
+                    clearInterval(timerInterval);
+                    gameDetails.avoidedCount = avoidedCount;
+
+                    let score = 0;
+                    if (gameSuccess) {
+                        score = 25;
+                    } else {
+                        score = Math.min(24, Math.floor((avoidedCount / 22) * 20));
+                    }
+                    gameScores.avoidance = score;
+
+                    render();
+                    ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.fillStyle = gameSuccess ? "#4ade80" : "#f87171";
+                    ctx.font = "bold 26px Pretendard";
+                    ctx.textAlign = "center";
+                    ctx.fillText(gameSuccess ? "🎉 20초 완주 성공!" : "💥 부딪혔습니다!", canvas.width / 2, canvas.height / 2 - 15);
+                    
+                    ctx.fillStyle = "#f8fafc";
+                    ctx.font = "16px Pretendard";
+                    ctx.fillText(`회피 차량: ${avoidedCount}대 | 획득 점수: ${score}점`, canvas.width / 2, canvas.height / 2 + 25);
+
+                    cleanup();
+                    setTimeout(finishMiniGame, 1800);
+                }
+
+                function handleMove(dir) {
+                    if (gameOver) return;
+                    if (dir === 'left' && targetLane > 0) targetLane--;
+                    if (dir === 'right' && targetLane < totalLanes - 1) targetLane++;
+                }
+
+                function onKeyDown(e) {
+                    if (e.key === 'ArrowLeft') handleMove('left');
+                    if (e.key === 'ArrowRight') handleMove('right');
+                }
+
+                const btnLeft = document.getElementById('btn-left');
+                const btnRight = document.getElementById('btn-right');
+
+                btnLeft.onclick = () => handleMove('left');
+                btnRight.onclick = () => handleMove('right');
+                window.addEventListener('keydown', onKeyDown);
+
+                function cleanup() {
+                    window.removeEventListener('keydown', onKeyDown);
+                    btnLeft.onclick = null;
+                    btnRight.onclick = null;
+                    clearInterval(timerInterval);
+                }
+
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // =================================================================
+        // MINI GAME 3: 주차 챌린지 (Parking Challenge)
+        // =================================================================
+        function initParkingGame() {
+            document.getElementById('game-title').innerText = "3. 주차 챌린지";
+            document.getElementById('game-controls-hint').innerText = "안내: 화면의 [시작하기] 버튼 클릭 후 게임이 시작됩니다.";
+
+            showReadyScreen(
+                "🅿️ 3단계: 주차 챌린지",
+                [
+                    "• 목표: 제한 시간 20초 안에 초록색 주차 구역에 정확히 주차하기!",
+                    "• 조종하는 차량 속도 15% 상향 및 기둥/장애물 2개 추가 배치된 랜덤 맵",
+                    "• 헤드라이트(전조등)가 달린 앞부분을 확인하여 조종하세요."
+                ],
+                "상/하/좌/우 방향키 또는 화면 화살표 버튼",
+                startActualGame
+            );
+
+            function startActualGame() {
+                document.getElementById('game-controls-hint').innerText = "컴퓨터: [방향키] / 모바일: 하단 방향키 버튼";
+                const touchControls = document.getElementById('touch-controls');
+                touchControls.innerHTML = `
+                    <div class="grid grid-cols-3 gap-1.5 w-48 mx-auto">
+                        <div></div>
+                        <button id="btn-up" class="py-2.5 bg-slate-800 active:bg-slate-700 text-white rounded-lg"><i class="fa-solid fa-arrow-up"></i></button>
+                        <div></div>
+                        <button id="btn-park-left" class="py-2.5 bg-slate-800 active:bg-slate-700 text-white rounded-lg"><i class="fa-solid fa-arrow-left"></i></button>
+                        <button id="btn-down" class="py-2.5 bg-slate-800 active:bg-slate-700 text-white rounded-lg"><i class="fa-solid fa-arrow-down"></i></button>
+                        <button id="btn-park-right" class="py-2.5 bg-slate-800 active:bg-slate-700 text-white rounded-lg"><i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+                `;
+
+                const maps = [
+                    {
+                        name: "T자 주차 심화 맵 A",
+                        start: { x: 70, y: 350, angle: 0 },
+                        target: { x: 370, y: 60, w: 75, h: 100 },
+                        obstacles: [
+                            { x: 300, y: 60, w: 60, h: 100, type: 'car' },
+                            { x: 200, y: 220, w: 40, h: 40, type: 'pillar' },
+                            { x: 120, y: 150, w: 40, h: 40, type: 'pillar' },
+                            { x: 310, y: 220, w: 55, h: 55, type: 'car' }
+                        ]
+                    },
+                    {
+                        name: "평행 주차 심화 맵 B",
+                        start: { x: 60, y: 140, angle: Math.PI / 2 },
+                        target: { x: 190, y: 330, w: 100, h: 65 },
+                        obstacles: [
+                            { x: 70, y: 330, w: 100, h: 65, type: 'car' },
+                            { x: 310, y: 330, w: 100, h: 65, type: 'car' },
+                            { x: 210, y: 200, w: 35, h: 35, type: 'pillar' },
+                            { x: 130, y: 200, w: 35, h: 35, type: 'pillar' }
+                        ]
+                    },
+                    {
+                        name: "기둥 미로 주차 맵 C",
+                        start: { x: 60, y: 60, angle: 0 },
+                        target: { x: 370, y: 310, w: 80, h: 80 },
+                        obstacles: [
+                            { x: 160, y: 140, w: 45, h: 45, type: 'pillar' },
+                            { x: 280, y: 230, w: 45, h: 45, type: 'pillar' },
+                            { x: 250, y: 80, w: 60, h: 90, type: 'car' },
+                            { x: 90, y: 250, w: 45, h: 45, type: 'pillar' },
+                            { x: 340, y: 180, w: 50, h: 50, type: 'pillar' }
+                        ]
+                    },
+                    {
+                        name: "지그재그 협소 주차 맵 D",
+                        start: { x: 410, y: 360, angle: -Math.PI / 2 },
+                        target: { x: 60, y: 60, w: 80, h: 80 },
+                        obstacles: [
+                            { x: 180, y: 180, w: 50, h: 50, type: 'pillar' },
+                            { x: 300, y: 120, w: 90, h: 60, type: 'car' },
+                            { x: 110, y: 280, w: 40, h: 40, type: 'pillar' },
+                            { x: 330, y: 280, w: 45, h: 45, type: 'pillar' }
+                        ]
+                    }
+                ];
+
+                const selectedMap = maps[Math.floor(Math.random() * maps.length)];
+
+                const car = {
+                    x: selectedMap.start.x,
+                    y: selectedMap.start.y,
+                    angle: selectedMap.start.angle,
+                    w: 32,
+                    h: 56,
+                    speed: 0,
+                    maxSpeed: 3.2,
+                    accel: 0.145,
+                    friction: 0.94
+                };
+
+                let timeLeft = 20;
+                let penalties = 0;
+                let invincibleTimer = 0;
+                let isGameOver = false;
+                let isSuccess = false;
+
+                const keys = { up: false, down: false, left: false, right: false };
+
+                let timerInterval = setInterval(() => {
+                    if (!isGameOver) {
+                        timeLeft--;
+                        if (timeLeft <= 0) {
+                            timeLeft = 0;
+                            isGameOver = true;
+                            finishGame(false);
+                        }
+                    }
+                }, 1000);
+
+                function gameLoop() {
+                    if (isGameOver) return;
+
+                    if (invincibleTimer > 0) invincibleTimer--;
+
+                    if (keys.up) car.speed = Math.min(car.speed + car.accel, car.maxSpeed);
+                    else if (keys.down) car.speed = Math.max(car.speed - car.accel, -car.maxSpeed * 0.5);
+                    else car.speed *= car.friction;
+
+                    if (keys.left) car.angle -= 0.045 * (car.speed / car.maxSpeed);
+                    if (keys.right) car.angle += 0.045 * (car.speed / car.maxSpeed);
+
+                    car.x += Math.sin(car.angle) * car.speed;
+                    car.y -= Math.cos(car.angle) * car.speed;
+
+                    // Boundary checks
+                    if (car.x < 15 || car.x > canvas.width - 15 || car.y < 15 || car.y > canvas.height - 15) {
+                        car.x = Math.max(15, Math.min(canvas.width - 15, car.x));
+                        car.y = Math.max(15, Math.min(canvas.height - 15, car.y));
+                        car.speed *= -0.4;
+                        if (invincibleTimer === 0) {
+                            penalties++;
+                            invincibleTimer = 40;
+                        }
+                    }
+
+                    // Obstacle collisions
+                    const carBox = getCarBoundingBox();
+                    for (let obs of selectedMap.obstacles) {
+                        if (
+                            carBox.x < obs.x + obs.w &&
+                            carBox.x + carBox.w > obs.x &&
+                            carBox.y < obs.y + obs.h &&
+                            carBox.y + carBox.h > obs.y
+                        ) {
+                            car.speed *= -0.4;
+                            if (invincibleTimer === 0) {
+                                penalties++;
+                                invincibleTimer = 40;
+                            }
+                        }
+                    }
+
+                    // Target check
+                    const t = selectedMap.target;
+                    if (
+                        car.x > t.x && car.x < t.x + t.w &&
+                        car.y > t.y && car.y < t.y + t.h &&
+                        Math.abs(car.speed) < 0.2
+                    ) {
+                        isGameOver = true;
+                        isSuccess = true;
+                        finishGame(true);
+                        return;
+                    }
+
+                    render();
+                    animFrameId = requestAnimationFrame(gameLoop);
+                }
+
+                function getCarBoundingBox() {
+                    return {
+                        x: car.x - car.w / 2,
+                        y: car.y - car.h / 2,
+                        w: car.w,
+                        h: car.h
+                    };
+                }
+
+                function render() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.fillStyle = "#1e293b";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Parking Target Zone (Green)
+                    ctx.fillStyle = "rgba(34, 197, 94, 0.25)";
+                    ctx.strokeStyle = "#22c55e";
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([6, 6]);
+                    ctx.fillRect(selectedMap.target.x, selectedMap.target.y, selectedMap.target.w, selectedMap.target.h);
+                    ctx.strokeRect(selectedMap.target.x, selectedMap.target.y, selectedMap.target.w, selectedMap.target.h);
+                    ctx.setLineDash([]);
+
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 12px Pretendard";
+                    ctx.textAlign = "center";
+                    ctx.fillText("주차 ZONE", selectedMap.target.x + selectedMap.target.w / 2, selectedMap.target.y + selectedMap.target.h / 2 + 4);
+
+                    // Obstacles / Pillars / Cars
+                    selectedMap.obstacles.forEach(obs => {
+                        ctx.fillStyle = obs.type === 'pillar' ? "#64748b" : "#475569";
+                        ctx.beginPath();
+                        ctx.roundRect(obs.x, obs.y, obs.w, obs.h, 6);
+                        ctx.fill();
+                        ctx.strokeStyle = "#94a3b8";
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+
+                        if (obs.type === 'pillar') {
+                            ctx.fillStyle = "#cbd5e1";
+                            ctx.beginPath();
+                            ctx.arc(obs.x + obs.w/2, obs.y + obs.h/2, 8, 0, Math.PI*2);
+                            ctx.fill();
+                        }
+                    });
+
+                    // Draw Player Car with Headlights & Invincible Blink
+                    if (invincibleTimer === 0 || Math.floor(invincibleTimer / 4) % 2 === 0) {
+                        ctx.save();
+                        ctx.translate(car.x, car.y);
+                        ctx.rotate(car.angle);
+
+                        ctx.fillStyle = "#38bdf8";
+                        ctx.beginPath();
+                        ctx.roundRect(-car.w / 2, -car.h / 2, car.w, car.h, 6);
+                        ctx.fill();
+                        ctx.strokeStyle = "#7dd3fc";
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+
+                        ctx.fillStyle = "#0284c7";
+                        ctx.fillRect(-car.w / 2 + 4, -car.h / 2 + 10, car.w - 8, car.h - 20);
+
+                        // Front Headlights
+                        ctx.fillStyle = "#fef08a";
+                        ctx.fillRect(-car.w / 2 + 3, -car.h / 2 - 2, 6, 4);
+                        ctx.fillRect(car.w / 2 - 9, -car.h / 2 - 2, 6, 4);
+
+                        ctx.restore();
+                    }
+
+                    // HUD Info
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 16px Pretendard";
+                    ctx.textAlign = "left";
+                    ctx.fillText(`⏱️ 남은시간: ${timeLeft}초`, 15, 30);
+                    ctx.textAlign = "right";
+                    ctx.fillText(`🚨 충돌감점: ${penalties}회`, canvas.width - 15, 30);
+                }
+
+                function finishGame(success) {
+                    clearInterval(timerInterval);
+                    gameDetails.parkingTimeLeft = timeLeft;
+
+                    let score = 0;
+                    if (success) {
+                        score = Math.max(10, 25 - (penalties * 3) + Math.floor(timeLeft / 2));
+                        score = Math.min(25, score);
+                    } else {
+                        score = Math.max(3, 15 - (penalties * 4));
+                    }
+                    gameScores.parking = score;
+
+                    render();
+                    ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.fillStyle = success ? "#4ade80" : "#f87171";
+                    ctx.font = "bold 24px Pretendard";
+                    ctx.textAlign = "center";
+                    ctx.fillText(success ? "🅿️ 주차 성공 완료!" : "⌛ 시간 초과 / 주차 실패", canvas.width / 2, canvas.height / 2 - 15);
+                    
+                    ctx.fillStyle = "#f8fafc";
+                    ctx.font = "15px Pretendard";
+                    ctx.fillText(`충돌 감점: ${penalties}회 | 획득 점수: ${score}점`, canvas.width / 2, canvas.height / 2 + 25);
+
+                    cleanup();
+                    setTimeout(finishMiniGame, 1800);
+                }
+
+                function setupButton(id, keyName) {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    el.onmousedown = () => keys[keyName] = true;
+                    el.onmouseup = () => keys[keyName] = false;
+                    el.ontouchstart = (e) => { e.preventDefault(); keys[keyName] = true; };
+                    el.ontouchend = (e) => { e.preventDefault(); keys[keyName] = false; };
+                }
+
+                setupButton('btn-up', 'up');
+                setupButton('btn-down', 'down');
+                setupButton('btn-park-left', 'left');
+                setupButton('btn-park-right', 'right');
+
+                function onKeyDown(e) {
+                    if (e.key === 'ArrowUp') keys.up = true;
+                    if (e.key === 'ArrowDown') keys.down = true;
+                    if (e.key === 'ArrowLeft') keys.left = true;
+                    if (e.key === 'ArrowRight') keys.right = true;
+                }
+                function onKeyUp(e) {
+                    if (e.key === 'ArrowUp') keys.up = false;
+                    if (e.key === 'ArrowDown') keys.down = false;
+                    if (e.key === 'ArrowLeft') keys.left = false;
+                    if (e.key === 'ArrowRight') keys.right = false;
+                }
+
+                window.addEventListener('keydown', onKeyDown);
+                window.addEventListener('keyup', onKeyUp);
+
+                function cleanup() {
+                    window.removeEventListener('keydown', onKeyDown);
+                    window.removeEventListener('keyup', onKeyUp);
+                    clearInterval(timerInterval);
+                }
+
+                animFrameId = requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // =================================================================
+        // MINI GAME 4: 기어 변속 타이밍 (Gear Shift Timing)
+        // =================================================================
+        function initGearGame() {
+            document.getElementById('game-title').innerText = "4. 기어 변속 타이밍";
+            document.getElementById('game-controls-hint').innerText = "안내: 화면의 [시작하기] 버튼 클릭 후 게임이 시작됩니다.";
+
+            showReadyScreen(
+                "⚙️ 4단계: 기어 변속 타이밍",
+                [
+                    "• 목표: 총 3라운드 (1단~3단)동안 바늘이 초록 안전 구간에 진입할 때 스페이스바 누르기!",
+                    "• 라운드가 올라갈수록 초록 안전구간이 좁아지고 바늘 속도가 빨라집니다.",
+                    "• 바늘 속도 15% 감속 적용"
+                ],
+                "스페이스바 또는 화면 변속 버튼",
+                startActualGame
+            );
+
+            function startActualGame() {
+                document.getElementById('game-controls-hint').innerText = "컴퓨터: [스페이스바] / 모바일: 하단 변속 버튼";
+                const touchControls = document.getElementById('touch-controls');
+                touchControls.innerHTML = `
+                    <button id="btn-gear-shift" class="w-full py-4 bg-indigo-600 active:bg-indigo-700 text-white font-extrabold rounded-2xl shadow-md text-lg">
+                        <i class="fa-solid fa-gauge mr-2"></i> 변속! (스페이스바)
+                    </button>
+                `;
+
+                let round = 1;
+                const maxRounds = 3;
+                let successes = 0;
+                let roundActive = true;
+                let feedbackText = "";
+                let feedbackColor = "#ffffff";
+                let feedbackTimer = null;
+
+                const roundConfigs = [
+                    { speed: 0.0212, zoneStart: 0.40, zoneEnd: 0.60, name: "1단 (쉬움)" },
+                    { speed: 0.034,  zoneStart: 0.43, zoneEnd: 0.57, name: "2단 (보통)" },
+                    { speed: 0.051,  zoneStart: 0.45, zoneEnd: 0.55, name: "3단 (어려움)" }
+                ];
+
+                let currentConfig = roundConfigs[0];
+                let needleAngle = 0;
+                let direction = 1;
+
+                function resetRound() {
+                    currentConfig = roundConfigs[round - 1];
+                    needleAngle = 0;
+                    direction = 1;
+                    roundActive = true;
+                }
+
+                function gameLoop() {
+                    if (!roundActive) return;
+
+                    needleAngle += currentConfig.speed * direction;
+                    if (needleAngle >= 1) {
+                        needleAngle = 1;
+                        direction = -1;
+                    } else if (needleAngle <= 0) {
+                        needleAngle = 0;
+                        direction = 1;
+                    }
+
+                    render();
+                    animFrameId = requestAnimationFrame(gameLoop);
+                }
+
+                function render() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.fillStyle = "#1e293b";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2 + 30;
+                    const radius = 130;
+
+                    const startAngle = Math.PI * 0.8;
+                    const endAngle = Math.PI * 2.2;
+                    const totalArc = endAngle - startAngle;
+
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                    ctx.strokeStyle = "#475569";
+                    ctx.lineWidth = 22;
+                    ctx.stroke();
+
+                    const zoneStartAngle = startAngle + totalArc * currentConfig.zoneStart;
+                    const zoneEndAngle = startAngle + totalArc * currentConfig.zoneEnd;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, zoneStartAngle, zoneEndAngle);
+                    ctx.strokeStyle = "#22c55e";
+                    ctx.lineWidth = 22;
+                    ctx.stroke();
+
+                    const currentNeedleAngle = startAngle + totalArc * needleAngle;
+                    const needleTipX = centerX + Math.cos(currentNeedleAngle) * (radius - 15);
+                    const needleTipY = centerY + Math.sin(currentNeedleAngle) * (radius - 15);
+
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.lineTo(needleTipX, needleTipY);
+                    ctx.strokeStyle = "#f8fafc";
+                    ctx.lineWidth = 5;
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, 12, 0, Math.PI * 2);
+                    ctx.fillStyle = "#38bdf8";
+                    ctx.fill();
+
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 18px Pretendard";
+                    ctx.textAlign = "center";
+                    ctx.fillText(`라운드 ${round} / 3 — ${currentConfig.name}`, centerX, 45);
+
+                    if (feedbackText) {
+                        ctx.fillStyle = "rgba(15, 23, 42, 0.8)";
+                        ctx.fillRect(centerX - 120, centerY - 80, 240, 60);
+                        ctx.strokeStyle = feedbackColor;
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(centerX - 120, centerY - 80, 240, 60);
+
+                        ctx.fillStyle = feedbackColor;
+                        ctx.font = "bold 26px Pretendard";
+                        ctx.fillText(feedbackText, centerX, centerY - 42);
+                    }
+                }
+
+                function handleInput() {
+                    if (!roundActive) return;
+                    roundActive = false;
+
+                    if (needleAngle >= currentConfig.zoneStart && needleAngle <= currentConfig.zoneEnd) {
+                        successes++;
+                        feedbackText = "SUCCESS!";
+                        feedbackColor = "#4ade80";
+                    } else {
+                        feedbackText = "FAIL!";
+                        feedbackColor = "#f87171";
+                    }
+
+                    render();
+
+                    feedbackTimer = setTimeout(() => {
+                        feedbackText = "";
+                        round++;
+                        if (round <= maxRounds) {
+                            resetRound();
+                            animFrameId = requestAnimationFrame(gameLoop);
+                        } else {
+                            finishGame();
+                        }
+                    }, 1200);
+                }
+
+                function finishGame() {
+                    gameDetails.gearSuccesses = successes;
+                    let score = Math.round((successes / maxRounds) * 25);
+                    gameScores.gear = score;
+
+                    cleanup();
+                    finishMiniGame();
+                }
+
+                function onKeyDown(e) {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        handleInput();
+                    }
+                }
+
+                const btnShift = document.getElementById('btn-gear-shift');
+                function onClick(e) {
+                    e.preventDefault();
+                    handleInput();
+                }
+
+                window.addEventListener('keydown', onKeyDown);
+                btnShift.addEventListener('click', onClick);
+
+                function cleanup() {
+                    window.removeEventListener('keydown', onKeyDown);
+                    btnShift.removeEventListener('click', onClick);
+                    if (feedbackTimer) clearTimeout(feedbackTimer);
+                }
+
+                resetRound();
+                animFrameId = requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // =================================================================
+        // DRIVER PERSONALITY SURVEY SCREEN (5 Questions)
+        // =================================================================
+        function showDriverSurveyScreen() {
+            showScreen('survey');
+            const container = document.getElementById('survey-questions-container');
+            container.innerHTML = `
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                    <div class="text-xs font-extrabold text-indigo-600">Q1. 내 차의 청결 상태는?</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="setSurveyAns(1, 0)" id="q1_opt0" class="p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-indigo-500 transition-all text-left">어제 먹은 음료수 캔이 그대로 방치되어 있다</button>
+                        <button onclick="setSurveyAns(1, 1)" id="q1_opt1" class="p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-indigo-500 transition-all text-left">누가 봐도 항상 깔끔하게 손세차 완료</button>
+                    </div>
+                </div>
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                    <div class="text-xs font-extrabold text-indigo-600">Q2. 정체 구간 깜빡이 넣고 끼어들려는 차량이 있다면?</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="setSurveyAns(2, 0)" id="q2_opt0" class="p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-indigo-500 transition-all text-left">초보인가? 마음 넓게 양보해 준다</button>
+                        <button onclick="setSurveyAns(2, 1)" id="q2_opt1" class="p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-indigo-500 transition-all text-left">상습범이 분명하다! 절대 안 끼워준다</button>
+                    </div>
+                </div>
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                    <div class="text-xs font-extrabold text-indigo-600">Q3. 내가 생각하는 내 운전 스타일은?</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="setSurveyAns(3, 0)" id="q3_opt0" class="p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-indigo-500 transition-all text-left">흐름을 주도하는 스포티한 드라이버</button>
+                        <button onclick="setSurveyAns(3, 1)" id="q3_opt1" class="p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-indigo-500 transition-all text-left">돌다리도 두드리는 100% 방어 운전자</button>
+                    </div>
+                </div>
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                    <div class="text-xs font-extrabold text-indigo-600">Q4. 드라이브 중 음악을 들을 때 나는?</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="setSurveyAns(4, 0)" id="q4_opt0" class="p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-indigo-500 transition-all text-left">노래방보다 더 신나게 떼창을 부른다</button>
+                        <button onclick="setSurveyAns(4, 1)" id="q4_opt1" class="p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-indigo-500 transition-all text-left">집중을 위해 잔잔한 재즈나 클래식을 튼다</button>
+                    </div>
+                </div>
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                    <div class="text-xs font-extrabold text-indigo-600">Q5. 내비게이션 길 안내를 받을 때 나는?</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="setSurveyAns(5, 0)" id="q5_opt0" class="p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-indigo-500 transition-all text-left">내비게이션이 안내하는 대로 온전히 따라간다</button>
+                        <button onclick="setSurveyAns(5, 1)" id="q5_opt1" class="p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-indigo-500 transition-all text-left">내 지름길 감각을 믿고 다른 길로 빠진다</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('btn-submit-survey').onclick = () => {
+                showResults();
+            };
+        }
+
+        window.setSurveyAns = function(qNum, optIdx) {
+            surveyAnswers[`q${qNum}`] = optIdx;
+            
+            const btn0 = document.getElementById(`q${qNum}_opt0`);
+            const btn1 = document.getElementById(`q${qNum}_opt1`);
+            
+            [btn0, btn1].forEach(b => {
+                b.className = "p-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-indigo-500 transition-all text-left";
+            });
+
+            const selectedBtn = document.getElementById(`q${qNum}_opt${optIdx}`);
+            selectedBtn.className = "p-3 bg-indigo-50 border-2 border-indigo-600 rounded-xl text-xs font-extrabold text-indigo-900 ring-2 ring-indigo-200 transition-all text-left shadow-sm";
+        };
+
+        // =================================================================
+        // RESULTS & ANALYSIS REPORT
+        // =================================================================
+        function showResults() {
+            showScreen('result');
+
+            const totalScore = gameScores.reaction + gameScores.avoidance + gameScores.parking + gameScores.gear;
+            document.getElementById('result-total-score').innerText = totalScore;
+
+            let percentile = 15;
+            if (totalScore >= 92) percentile = 1;
+            else if (totalScore >= 85) percentile = 3;
+            else if (totalScore >= 75) percentile = 10;
+            else if (totalScore >= 60) percentile = 25;
+            else if (totalScore >= 45) percentile = 45;
+            else percentile = 70;
+
+            document.getElementById('result-percentile').innerText = `${percentile}%`;
+            document.getElementById('chart-position-label').innerText = `내 위치: 상위 ${percentile}% (${totalScore}점)`;
+
+            let title = "베테랑 로드 마스터";
+            let desc = "반응속도, 차폭 감각, 변속 타이밍 전반에 걸쳐 타의 추종을 불허하는 완벽한 드라이빙 센스를 지니고 있습니다.";
+            if (totalScore < 50) {
+                title = "안전제일 장롱면허 루키";
+                desc = "아직 도로 주행 감각과 반사 신경이 익숙치 않으나, 높은 신중함으로 사고 위험이 적은 원석 같은 드라이버입니다.";
+            } else if (totalScore < 75) {
+                title = "스마트 시티 드라이버";
+                desc = "일상적인 출퇴근 및 주행에서 안정적인 기량을 보여주며 위기 대처 능력도 평균 이상인 모범 운전자입니다.";
+            }
+
+            document.getElementById('result-archetype-title').innerText = title;
+            document.getElementById('result-archetype-desc').innerText = `"${desc}"`;
+
+            // Expanded Recommended Car & Music matching with Google / Unsplash Car Images
+            let carName = "현대 아반떼 CN7 (실용성과 연비의 아이콘)";
+            let carImgUrl = "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80";
+            let carReason = "도심 주행과 주차에 최적화된 컴팩트 세단으로 균형 잡힌 주행 감각을 제공합니다.";
+            let musicName = "청량한 드라이브 팝송 & 업템포 신스팝";
+            let musicReason = "지루할 틈 없는 경쾌한 리듬으로 주행 집중력과 기분 전환을 동시에 선사합니다.";
+
+            if (totalScore >= 90) {
+                carName = "포르쉐 911 카레라 S (드라이빙의 정점, 고성능 스포츠카)";
+                carImgUrl = "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=800&q=80";
+                carReason = "최상위 순발력과 완벽한 조향 감각을 지닌 드라이버에게 어울리는 최고의 로망입니다.";
+                musicName = "아드레날린을 폭발시키는 록 & 일렉트로닉 앤섬";
+                musicReason = "극한의 속도감과 완벽한 핸들링 반응에 쾌감을 더해주는 강렬한 비트입니다.";
+            } else if (surveyAnswers.q3 === 0 && totalScore >= 75) {
+                carName = "BMW M340i (다이나믹 고성능 스포츠 세단)";
+                carImgUrl = "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80";
+                carReason = "다이나믹한 스티어링 감각과 뛰어난 변속 반응을 100% 즐길 수 있는 고성능 모델입니다.";
+                musicName = "심장을 울리는 베이스 힙합 & EDM 믹스";
+                musicReason = "스포티한 주행 질감에 완벽히 부합하는 강렬한 비트의 플레이리스트입니다.";
+            } else if (surveyAnswers.q1 === 1 && surveyAnswers.q5 === 0) {
+                carName = "테슬라 모델 3 퍼포먼스 (스마트 오토파일럿 EV)";
+                carImgUrl = "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80";
+                carReason = "내비게이션 연동과 깔끔한 정돈 성향을 갖춘 미래지향적 스마트 드라이버에게 최적입니다.";
+                musicName = "미래지향적 퓨처 베이스 & 신스웨이브";
+                musicReason = "전기차의 정숙함과 세련된 인포테인먼트 감성을 배가시켜 줍니다.";
+            } else if (surveyAnswers.q4 === 1 || totalScore < 50) {
+                carName = "볼보 XC40 (안전 중심 프리미엄 컴팩트 SUV)";
+                carImgUrl = "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80";
+                carReason = "최고 수준의 안전 사양과 편안한 승차감으로 방어 운전에 최적화된 SUV입니다.";
+                musicName = "마음을 편안하게 해주는 어쿠스틱 재즈 & 로파이";
+                musicReason = "차분한 템포로 안전운전을 돕고 정체 구간 스트레스를 완화해 줍니다.";
+            } else {
+                carName = "기아 쏘렌토 하이브리드 (패밀리 SUV 최강자)";
+                carImgUrl = "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80";
+                carReason = "넓은 실내 공간과 뛰어난 정숙성으로 일상과 여행을 모두 아우르는 만능 패밀리카입니다.";
+                musicName = "마음이 편안해지는 감성 인디 팝 & 발라드";
+                musicReason = "동승자와 함께 편안하게 대화하며 즐길 수 있는 부드러운 선율입니다.";
+            }
+
+            document.getElementById('result-recommended-car').innerText = carName;
+            document.getElementById('result-car-img').src = carImgUrl;
+            document.getElementById('result-car-reason').innerText = carReason;
+            document.getElementById('result-recommended-music').innerText = musicName;
+            document.getElementById('result-music-reason').innerText = musicReason;
+
+            // Category Breakdown List with Icons
+            const getReactionDesc = (score) => {
+                if (score >= 22) return "돌발 상황에서 비상 제동이나 회피 기동을 수행할 수 있는 최상급 반사 신경을 가졌습니다.";
+                if (score >= 15) return "평균적인 돌발 반응 속도로 안전 주행에 무리가 없는 무난한 순발력입니다.";
+                return "돌발 상황 대처 시 조금 더 전방 주시와 여유 있는 반응 속도 연습이 권장됩니다.";
+            };
+
+            const getAvoidanceDesc = (score) => {
+                if (score >= 22) return "차선 변경과 장애물 회피 시 스티어링 휠 조작이 매우 부드럽고 안정적입니다.";
+                if (score >= 15) return "급하지 않은 상황에서 무난하게 차선을 유지하며 주행하는 조향 능력입니다.";
+                return "좁은 도로 주행 시 차체 폭과 조향각 감각을 조금 더 다듬을 필요가 있습니다.";
+            };
+
+            const getParkingDesc = (score) => {
+                if (score >= 22) return "복잡하고 좁은 주차 공간에서도 좁은 각도를 완벽히 파악하는 탁월한 차폭 감각입니다.";
+                if (score >= 15) return "표준적인 주차 공간에 무난하게 입고할 수 있는 안정적인 공간 지각력입니다.";
+                return "후진 주차 및 기둥/장애물 회피 감각을 익히기 위해 여유로운 반복 연습이 좋습니다.";
+            };
+
+            const getGearDesc = (score) => {
+                if (score >= 22) return "RPM과 엔진 부하의 흐름을 정확히 이해하고 최적의 타이밍을 잡아내는 변속 센스입니다.";
+                if (score >= 15) return "주행 리듬에 맞춰 적절한 변속 타이밍을 가늠할 수 있는 무난한 감각입니다.";
+                return "엔진 소리와 게이지 박자의 합을 맞추는 타이밍 감각을 조금 더 키우면 좋습니다.";
+            };
+
+            const catList = document.getElementById('categories-analysis-list');
+            catList.innerHTML = `
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5">
+                    <div class="flex justify-between items-center text-xs font-bold">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-red-100 text-red-600 flex items-center justify-center text-[10px]"><i class="fa-solid fa-stopwatch"></i></span>
+                            <span class="text-slate-800">1. 신호등 반응속도 (순발력)</span>
+                        </div>
+                        <span class="text-indigo-600">${gameScores.reaction} / 25점</span>
+                    </div>
+                    <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                        <div class="bg-indigo-600 h-full rounded-full" style="width: ${(gameScores.reaction/25)*100}%"></div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 font-medium">${getReactionDesc(gameScores.reaction)}</p>
+                </div>
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5">
+                    <div class="flex justify-between items-center text-xs font-bold">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-[10px]"><i class="fa-solid fa-car-burst"></i></span>
+                            <span class="text-slate-800">2. 장애물 피하기 (조향 감각)</span>
+                        </div>
+                        <span class="text-indigo-600">${gameScores.avoidance} / 25점</span>
+                    </div>
+                    <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                        <div class="bg-indigo-600 h-full rounded-full" style="width: ${(gameScores.avoidance/25)*100}%"></div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 font-medium">${getAvoidanceDesc(gameScores.avoidance)}</p>
+                </div>
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5">
+                    <div class="flex justify-between items-center text-xs font-bold">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px]"><i class="fa-solid fa-square-parking"></i></span>
+                            <span class="text-slate-800">3. 주차 챌린지 (차폭 감각)</span>
+                        </div>
+                        <span class="text-indigo-600">${gameScores.parking} / 25점</span>
+                    </div>
+                    <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                        <div class="bg-indigo-600 h-full rounded-full" style="width: ${(gameScores.parking/25)*100}%"></div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 font-medium">${getParkingDesc(gameScores.parking)}</p>
+                </div>
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-1.5">
+                    <div class="flex justify-between items-center text-xs font-bold">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px]"><i class="fa-solid fa-gear"></i></span>
+                            <span class="text-slate-800">4. 기어 변속 타이밍 (변속 센스)</span>
+                        </div>
+                        <span class="text-indigo-600">${gameScores.gear} / 25점</span>
+                    </div>
+                    <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                        <div class="bg-indigo-600 h-full rounded-full" style="width: ${(gameScores.gear/25)*100}%"></div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 font-medium">${getGearDesc(gameScores.gear)}</p>
+                </div>
+            `;
+
+            renderDistributionChart(totalScore);
+        }
+
+        function renderDistributionChart(userScore) {
+            const ctxChart = document.getElementById('distributionChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            const userPositionPlugin = {
+                id: 'userPositionPlugin',
+                afterDraw(chart) {
+                    const { ctx, chartArea: { top, bottom, left, right }, scales: { x } } = chart;
+                    
+                    let indexVal = 2;
+                    if (userScore >= 90) indexVal = 5;
+                    else if (userScore >= 75) indexVal = 4;
+                    else if (userScore >= 60) indexVal = 3;
+                    else if (userScore >= 45) indexVal = 2;
+                    else if (userScore >= 30) indexVal = 1;
+                    else indexVal = 0;
+
+                    const meta = chart.getDatasetMeta(0);
+                    const point = meta.data[indexVal];
+                    if (!point) return;
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 2.5;
+                    ctx.setLineDash([4, 4]);
+                    ctx.moveTo(point.x, top + 10);
+                    ctx.lineTo(point.x, bottom);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    ctx.save();
+                    ctx.fillStyle = '#ef4444';
+                    ctx.font = 'bold 11px Pretendard';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`★ 내 위치 (${userScore}점)`, point.x, top);
+                    ctx.restore();
+                }
+            };
+
+            chartInstance = new Chart(ctxChart, {
+                type: 'line',
+                data: {
+                    labels: ['20점대', '35점대', '50점대', '65점대', '80점대', '95점대 이상'],
+                    datasets: [{
+                        label: '운전자 분포',
+                        data: [5, 15, 35, 40, 20, 8],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { display: false },
+                        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+                    }
+                },
+                plugins: [userPositionPlugin]
+            });
+        }
+
+        function generateFortuneAnalysis() {
+            const name = document.getElementById('prof-name').value.trim() || "운전자";
+            const birth = document.getElementById('prof-birth').value;
+            const licenseInput = document.getElementById('prof-license-date');
+            const isUnlicensed = licenseInput.disabled;
+            const totalScore = gameScores.reaction + gameScores.avoidance + gameScores.parking + gameScores.gear;
+
+            let fortuneSentence = "";
+            if (isUnlicensed) {
+                if (totalScore >= 65) {
+                    fortuneSentence = `🔮 [사주 프로파일링 - 무면허 맞춤 진단] ${name}님은 타고난 드라이빙 감각과 순발력이 매우 뛰어납니다! 실력이 훌륭하므로 당장 면허를 취득하여 도로 위로 진출하는 것을 적극 추천합니다. 머지않아 베스트 드라이버로 명성을 떨칠 운명입니다!`;
+                } else {
+                    fortuneSentence = `🔮 [사주 프로파일링 - 무면허 맞춤 진단] ${name}님은 현재 기초 주행 감각과 순발력이 조금 다듬어질 필요가 있습니다. 하지만 멋진 운전자가 되기 위해 면허 취득 목표를 향해 조금만 더 열심히 노력한다면 반드시 훌륭한 드라이버로 거듭날 수 있으니 힘내세요!`;
+                }
+            } else {
+                if (totalScore >= 80) {
+                    fortuneSentence = `🔮 [사주 프로파일링] ${name}님(생년월일: ${birth || "미입력"})은 천을귀인이 호위하는 천생 드라이버 사주입니다. 도로 위의 흐름을 동물적으로 읽어내며, 어떤 급커브나 돌발 상황 속에서도 귀인의 조력을 받듯 안전하고 우아하게 위기를 탈출할 운명입니다!`;
+                } else if (totalScore >= 55) {
+                    fortuneSentence = `🔮 [사주 프로파일링] ${name}님(생년월일: ${birth || "미입력"})은 중용의 도를 아는 안정형 드라이버 사주입니다. 조급함을 경계하고 방어 운전을 철저히 할수록 재물운과 교통 안전운이 동시에 상승하여 언제나 평탄한 귀가길이 보장됩니다.`;
+                } else {
+                    fortuneSentence = `🔮 [사주 프로파일링] ${name}님(생년월일: ${birth || "미입력"})은 대기만성형 안전주의자 사주입니다. 초기 주행 감각은 다소 수줍으나, 경험이 쌓일수록 묵묵히 명장이 되는 대형 면허의 기운을 품고 있으니 템포를 조금만 늦추면 만사형통입니다!`;
+                }
+            }
+
+            const box = document.getElementById('fortune-result-box');
+            box.innerText = fortuneSentence;
+            box.classList.remove('hidden');
+            showToast("사주형 운전 성향 진단이 완료되었습니다.");
+        }
+
+        function shareResult() {
+            const totalScore = gameScores.reaction + gameScores.avoidance + gameScores.parking + gameScores.gear;
+            const text = `[드라이빙 종합 진단 결과]\n나의 운전 능력 점수: ${totalScore}점 / 100점!\n순발력, 조향, 주차, 변속 테스트 및 성향 설문을 완료했습니다. 지금 테스트에 도전해보세요!`;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast("결과 내용이 클립보드에 복사되었습니다!");
+                }).catch(() => {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast("결과 내용이 클립보드에 복사되었습니다!");
+            } catch (err) {
+                showToast("복사 실패. 브라우저 권한을 확인해주세요.");
+            }
+            document.body.removeChild(textarea);
+        }
+    </script>
+</body>
+</html>
